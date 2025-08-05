@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 import { CONFIG } from './config/app.config';
 import { createScene } from './core/scene';
 import { createCamera } from './core/camera';
