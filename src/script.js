@@ -4,22 +4,23 @@ import { gsap } from 'gsap';
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
-// const CONFIG = {
-//   canvas: {
-//     selector: 'canvas.webgl',
-//     width: 800,
-//     height: 600
-//   },
-//   camera: {
-//     fov: 75,
-//     near: 0.1,
-//     far: 1000,
-//     position: { x: 0, y: 0, z: 2 }
-//   },
-// };
+const CONFIG = {
+  canvas: {
+    selector: 'canvas.webgl',
+    width: 800,
+    height: 600,
+  },
+  camera: {
+    fov: 75,
+    near: 0.1,
+    far: 1000,
+    position: { x: 0, y: 0, z: 2 },
+  },
+};
 
 // Canvas
-const canvas = document.querySelector('canvas.webgl');
+const getCanvas = () =>
+  document.querySelector(CONFIG.canvas.selector);
 
 // Scene
 const scene = new THREE.Scene();
@@ -33,42 +34,32 @@ cubeMesh.name = 'myCube'; // Give the cube a name
 cubeMesh.position.set(0, 0, 0);
 scene.add(cubeMesh);
 
-// Camera Aspect Ratio
-const sizes = {
-  width: 800,
-  height: 600,
-};
-
-// Camera
+// Create Camera
 const camera = new THREE.PerspectiveCamera(
   75,
-  sizes.width / sizes.height
+  CONFIG.canvas.width / CONFIG.canvas.height
 );
 camera.position.z = 2;
 scene.add(camera);
 
-// Renderer
+// Create Renderer
 const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
+  canvas: getCanvas(),
 });
-renderer.setSize(sizes.width, sizes.height);
+renderer.setSize(CONFIG.canvas.width, CONFIG.canvas.height);
 
-// Utility Functions
-function addSpheresAroundObject(
-  clickedObject,
-  radius = 1,
-  sphereCount = 4
-) {
-  // Create a Group for spheres
+// Impure Functions
+function createSphereRing(sphereCount, clickedObject, scene) {
+  // Create a Group to hold sphere objects
   const sphereGroup = new THREE.Group();
   sphereGroup.position.copy(clickedObject.position);
   scene.add(sphereGroup);
 
-  // Create spheres at the center first
+  // Sphere array to hold sphere and angle
   const spheres = [];
 
   for (let i = 0; i < sphereCount; i++) {
-    // Calculate the angle of the Sphere
+    // Calculate the angle of the Sphere based on the index
     const angle = (i / sphereCount) * Math.PI * 2; // full circle
 
     // Create a Sphere
@@ -77,15 +68,34 @@ function addSpheresAroundObject(
       new THREE.MeshBasicMaterial({ color: 0xffff00 })
     );
 
-    // Start all spheres at the center (clicked object position)
+    // Position all spheres at the center of the Group
     sphere.position.set(
       sphereGroup.position.x,
       sphereGroup.position.y,
       sphereGroup.position.z
     );
+
+    // Add Sphere to group
     sphereGroup.add(sphere);
+
+    // Add Sphere to the array along with its angle
     spheres.push({ sphere, angle });
   }
+
+  return { sphereGroup, spheres };
+}
+
+function addSpheresAroundObject(
+  clickedObject,
+  radius = 1,
+  sphereCount = 4
+) {
+  // Create Sphere ring
+  const { sphereGroup, spheres } = createSphereRing(
+    sphereCount,
+    clickedObject,
+    scene
+  );
 
   // Animate spheres expanding outward
   spheres.forEach(({ sphere, angle }, index) => {
@@ -125,11 +135,8 @@ function addSpheresAroundObject(
   });
 }
 
-// Interactivity
-function handleCanvasClicked(event) {
-  console.log('Canvas clicked');
-
-  // ---- Convert mouse position to normalized device coordinates ----
+// Utility Functions
+function calculateMousePosition(event, canvas) {
   // Get the mouse position on viewport coordinates
   const { clientX: mousePositionX, clientY: mousePositionY } = event;
 
@@ -138,37 +145,55 @@ function handleCanvasClicked(event) {
     canvas.getBoundingClientRect();
 
   // Get the mouse position on normalized device coordinates
-  // Convert mouse viewport coordinates to normalized device coordinates
   const mouseNormalizedDeviceCoordinates = new THREE.Vector2();
+
+  // Convert mouse viewport coordinates to normalized device coordinates
   mouseNormalizedDeviceCoordinates.x =
-    ((mousePositionX - canvasLeft) / sizes.width) * 2 - 1;
+    ((mousePositionX - canvasLeft) / CONFIG.canvas.width) * 2 - 1;
   mouseNormalizedDeviceCoordinates.y =
-    -((mousePositionY - canvasTop) / sizes.height) * 2 + 1;
+    -((mousePositionY - canvasTop) / CONFIG.canvas.height) * 2 + 1;
 
-  // ---- Cast ray to mouse position ----
-  // Create a raycaster
-  const raycaster = new THREE.Raycaster();
+  return mouseNormalizedDeviceCoordinates;
+}
+
+function getIntersectedObjects(raycaster, camera, mouse, objects) {
   // Set the raycaster from the camera to mouse position
-  raycaster.setFromCamera(mouseNormalizedDeviceCoordinates, camera);
+  raycaster.setFromCamera(mouse, camera);
 
-  // ---- Check if ray intersects with the cube ----
-  const intersects = raycaster.intersectObjects(scene.children);
-  console.log(intersects);
+  // ---- Check if ray intersects with any objects in the scene ----
+  return raycaster.intersectObjects(objects);
+}
 
-  if (intersects.length > 0) {
-    const clickedObject = intersects[0].object;
+function findClickedObject(intersects) {
+  return intersects.length > 0 ? intersects[0].object : null;
+}
 
-    // Check if the clicked object is our named cube
-    if (clickedObject.name === 'myCube') {
-      console.log('My cube was clicked!');
+// Interactivity
+function handleCanvasClicked(event) {
+  // Get Mouse Position
+  const mousePos = calculateMousePosition(event, getCanvas());
 
-      // Add three spheres around the cube
-      addSpheresAroundObject(clickedObject);
-    }
+  // Cast ray from Camera to Mouse position and
+  // Get all the Objects the ray intersected with
+  const raycaster = new THREE.Raycaster();
+  const intersects = getIntersectedObjects(
+    raycaster,
+    camera,
+    mousePos,
+    scene.children
+  );
+
+  // Get the Object that the Mouse clicked on
+  const clickedObject = findClickedObject(intersects);
+
+  // Check if the clicked object is our named cube
+  if (clickedObject?.name === 'myCube') {
+    // Add three spheres around the cube
+    addSpheresAroundObject(clickedObject);
   }
 }
 
-canvas.addEventListener('click', (event) => {
+getCanvas().addEventListener('click', (event) => {
   handleCanvasClicked(event);
 });
 
