@@ -1,165 +1,102 @@
 import * as THREE from 'three';
-import { gsap } from 'gsap';
+
 import { CONFIG } from './config/app.config';
+import { createScene } from './core/scene';
+import { createCamera } from './core/camera';
+import { createRenderer } from './core/renderer';
+import { createCube, createSphereRing } from './objects/factories';
+import { calculateMousePosition } from './interaction/input';
+import {
+  createRaycaster,
+  getIntersectedObjects,
+  findClickedObject,
+} from './interaction/raycasting';
+import {
+  animateSphereExpansion,
+  animateSphereGroup,
+} from './objects/animation';
 
-// Canvas
-const getCanvas = () =>
-  document.querySelector(CONFIG.canvas.selector);
+// Create Core components
+const scene = createScene();
+const camera = createCamera();
+const canvas = document.querySelector(CONFIG.canvas.selector);
+const renderer = createRenderer(canvas);
 
-// Scene
-const scene = new THREE.Scene();
-
-// Create a Cube Mesh
-const cubeMesh = new THREE.Mesh(
-  new THREE.BoxGeometry(0.5, 0.5, 0.5),
-  new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-);
-cubeMesh.name = 'myCube'; // Give the cube a name
-cubeMesh.position.set(0, 0, 0);
-scene.add(cubeMesh);
-
-// Create Camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  CONFIG.canvas.width / CONFIG.canvas.height
-);
-camera.position.z = 2;
+// Add Camera to Scene
 scene.add(camera);
 
+// Create a Cube Mesh
+const cubeMesh = createCube();
+scene.add(cubeMesh);
+
 // Create Renderer
-const renderer = new THREE.WebGLRenderer({
-  canvas: getCanvas(),
-});
-renderer.setSize(CONFIG.canvas.width, CONFIG.canvas.height);
 
 // Impure Functions
-function createSphereRing(sphereCount, clickedObject, scene) {
-  // Create a Group to hold sphere objects
-  const sphereGroup = new THREE.Group();
-  sphereGroup.position.copy(clickedObject.position);
-  scene.add(sphereGroup);
+// function createSphereRing(sphereCount, clickedObject, scene) {
+//   // Create a Group to hold sphere objects
+//   const sphereGroup = new THREE.Group();
+//   sphereGroup.position.copy(clickedObject.position);
+//   scene.add(sphereGroup);
 
-  // Sphere array to hold sphere and angle
-  const spheres = [];
+//   // Sphere array to hold sphere and angle
+//   const spheres = [];
 
-  for (let i = 0; i < sphereCount; i++) {
-    // Calculate the angle of the Sphere based on the index
-    const angle = (i / sphereCount) * Math.PI * 2; // full circle
+//   for (let i = 0; i < sphereCount; i++) {
+//     // Calculate the angle of the Sphere based on the index
+//     const angle = (i / sphereCount) * Math.PI * 2; // full circle
 
-    // Create a Sphere
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.2, 32, 32),
-      new THREE.MeshBasicMaterial({ color: 0xffff00 })
-    );
+//     // Create a Sphere
+//     const sphere = new THREE.Mesh(
+//       new THREE.SphereGeometry(0.2, 32, 32),
+//       new THREE.MeshBasicMaterial({ color: 0xffff00 })
+//     );
 
-    // Position all spheres at the center of the Group
-    sphere.position.set(
-      sphereGroup.position.x,
-      sphereGroup.position.y,
-      sphereGroup.position.z
-    );
+//     // Position all spheres at the center of the Group
+//     sphere.position.set(
+//       sphereGroup.position.x,
+//       sphereGroup.position.y,
+//       sphereGroup.position.z
+//     );
 
-    // Add Sphere to group
-    sphereGroup.add(sphere);
+//     // Add Sphere to group
+//     sphereGroup.add(sphere);
 
-    // Add Sphere to the array along with its angle
-    spheres.push({ sphere, angle });
-  }
+//     // Add Sphere to the array along with its angle
+//     spheres.push({ sphere, angle });
+//   }
 
-  return { sphereGroup, spheres };
-}
+//   return { sphereGroup, spheres };
+// }
 
 function addSpheresAroundObject(
   clickedObject,
-  radius = 1,
-  sphereCount = 4
+  sphereCount = 4,
+  radius = 1
 ) {
-  // Create Sphere ring
+  // Create Sphere ring at the centre of clicked object
   const { sphereGroup, spheres } = createSphereRing(
     sphereCount,
-    clickedObject,
-    scene
+    clickedObject.position
   );
 
+  // Add Group to scene
+  scene.add(sphereGroup);
+
   // Animate spheres expanding outward
-  spheres.forEach(({ sphere, angle }, index) => {
-    const targetX = sphereGroup.position.x + radius * Math.cos(angle);
-    const targetY = sphereGroup.position.y + radius * Math.sin(angle);
-    const targetZ = sphereGroup.position.z;
-
-    gsap.to(sphere.position, {
-      x: targetX,
-      y: targetY,
-      z: targetZ,
-      duration: 1,
-      delay: index * 0.1, // Stagger the animation
-      ease: 'back.out(1.7)',
-    });
-
-    // Animate the scale animation for extra effect
-    gsap.fromTo(
-      sphere.scale,
-      { x: 0, y: 0, z: 0 }, // Start from zero scale
-      {
-        x: 1,
-        y: 1,
-        z: 1, // Scale to normal size
-        duration: 0.8,
-        delay: index * 0.1,
-        ease: 'back.out(1.7)',
-      }
-    );
-  });
+  animateSphereExpansion(spheres, clickedObject.position, radius);
 
   // Animate the Sphere Group
-  gsap.to(sphereGroup.rotation, {
-    z: '+=' + Math.PI * 2 * 0.4,
-    duration: 3,
-    ease: 'power4.Out',
-  });
-}
-
-// Utility Functions
-function calculateMousePosition(event, canvas) {
-  // Get the mouse position on viewport coordinates
-  const { clientX: mousePositionX, clientY: mousePositionY } = event;
-
-  // Get the canvas position
-  const { left: canvasLeft, top: canvasTop } =
-    canvas.getBoundingClientRect();
-
-  // Get the mouse position on normalized device coordinates
-  const mouseNormalizedDeviceCoordinates = new THREE.Vector2();
-
-  // Convert mouse viewport coordinates to normalized device coordinates
-  mouseNormalizedDeviceCoordinates.x =
-    ((mousePositionX - canvasLeft) / CONFIG.canvas.width) * 2 - 1;
-  mouseNormalizedDeviceCoordinates.y =
-    -((mousePositionY - canvasTop) / CONFIG.canvas.height) * 2 + 1;
-
-  return mouseNormalizedDeviceCoordinates;
-}
-
-function getIntersectedObjects(raycaster, camera, mouse, objects) {
-  // Set the raycaster from the camera to mouse position
-  raycaster.setFromCamera(mouse, camera);
-
-  // ---- Check if ray intersects with any objects in the scene ----
-  return raycaster.intersectObjects(objects);
-}
-
-function findClickedObject(intersects) {
-  return intersects.length > 0 ? intersects[0].object : null;
+  animateSphereGroup(sphereGroup);
 }
 
 // Interactivity
 function handleCanvasClicked(event) {
   // Get Mouse Position
-  const mousePos = calculateMousePosition(event, getCanvas());
+  const mousePos = calculateMousePosition(event, canvas);
 
   // Cast ray from Camera to Mouse position and
   // Get all the Objects the ray intersected with
-  const raycaster = new THREE.Raycaster();
+  const raycaster = createRaycaster();
   const intersects = getIntersectedObjects(
     raycaster,
     camera,
@@ -177,7 +114,7 @@ function handleCanvasClicked(event) {
   }
 }
 
-getCanvas().addEventListener('click', (event) => {
+canvas.addEventListener('click', (event) => {
   handleCanvasClicked(event);
 });
 
