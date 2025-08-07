@@ -5,6 +5,10 @@ It's a simple animation. Click the cube to see it in action.
 ## How to trigger the trigonometric animation
 Click the green cube to see the trigonometric animation
 
+<img width="1132" height="942" alt="image" src="https://github.com/user-attachments/assets/3c9ffb98-bc27-4116-b8c5-68452eb135ac" />
+
+
+
 ## The Math behind the placement of the circles
 How are the target positions of the circles calculated ?
 
