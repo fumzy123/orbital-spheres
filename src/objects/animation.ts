@@ -1,12 +1,18 @@
 import { gsap } from 'gsap';
-import { CONFIG } from '../config/app.config.js';
+import { CONFIG } from '../config/app.config';
+import * as THREE from 'three';
+
+interface SphereWithAngle {
+  sphere: THREE.Mesh;
+  angle: number;
+}
 
 // Business logic - Visual effects
 export const animateSphereExpansion = (
-  spheres,
-  centerPosition,
-  radius
-) => {
+  spheres: SphereWithAngle[],
+  centerPosition: THREE.Vector3,
+  radius: number
+): void => {
   spheres.forEach(({ sphere, angle }, index) => {
     // Calculate Sphere target positions using angles
     const targetX = centerPosition.x + radius * Math.cos(angle);
@@ -39,7 +45,9 @@ export const animateSphereExpansion = (
   });
 };
 
-export const animateSphereGroup = (sphereGroup) => {
+export const animateSphereGroup = (
+  sphereGroup: THREE.Group
+): void => {
   gsap.to(sphereGroup.rotation, {
     z: '+=' + Math.PI * 2 * 0.4,
     duration: 3,

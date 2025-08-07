@@ -5,15 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint src/**/*.js",
-    "lint:fix": "eslint src/**/*.js --fix"
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
+    "lint": "eslint src/**/*.{js,ts}",
+    "lint:fix": "eslint src/**/*.{js,ts} --fix",
+    "clean": "rm -rf dist"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@types/node": "^24.2.0",
+    "@types/three": "^0.179.0",
     "eslint": "^9.32.0",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.3.0",
+    "typescript": "^5.9.2",
     "vite": "^6.2.2",
     "vite-plugin-restart": "^0.4.2"
   },

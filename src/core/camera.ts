@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config/app.config';
 
-export function createCamera() {
+export function createCamera(): THREE.PerspectiveCamera {
   const camera = new THREE.PerspectiveCamera(
     CONFIG.camera.fov,
     CONFIG.canvas.width / CONFIG.canvas.height,

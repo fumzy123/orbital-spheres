@@ -1,7 +1,10 @@
 import * as THREE from 'three';
-import { CONFIG } from '../config/app.config.js';
+import { CONFIG } from '../config/app.config';
 
-export function calculateMousePosition(event, canvas) {
+export function calculateMousePosition(
+  event: MouseEvent,
+  canvas: HTMLCanvasElement
+): THREE.Vector2 {
   // Get the mouse position on viewport coordinates
   const { clientX: mousePositionX, clientY: mousePositionY } = event;
 

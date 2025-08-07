@@ -1,8 +1,8 @@
 import { CONFIG } from './config/app.config';
 import { createScene } from './core/scene';
 import { createCamera } from './core/camera';
-import { createRenderer, loopRenderer } from './core/renderer';
-import { createCube, createSphereRing } from './objects/factories';
+import { createRenderer, loopRenderer } from './core/renderer.js';
+import { createCube, createSphereRing } from './objects/factories.js';
 import { calculateMousePosition } from './interaction/input';
 import {
   createRaycaster,
@@ -13,12 +13,15 @@ import {
   animateSphereExpansion,
   animateSphereGroup,
 } from './objects/animation';
+import * as THREE from 'three';
 
-function init() {
+function init(): void {
   // Create Core components
   const scene = createScene();
   const camera = createCamera();
-  const canvas = document.querySelector(CONFIG.canvas.selector);
+  const canvas = document.querySelector(
+    CONFIG.canvas.selector
+  ) as HTMLCanvasElement;
   const renderer = createRenderer(canvas);
 
   // Create a Cube Mesh
@@ -33,10 +36,10 @@ function init() {
 
   //
   function addSpheresAroundObject(
-    clickedObject,
+    clickedObject: THREE.Object3D,
     sphereCount = 4,
     radius = 1
-  ) {
+  ): void {
     // Create Sphere ring at the centre of clicked object
     const { sphereGroup, spheres } = createSphereRing(
       sphereCount,
@@ -54,7 +57,7 @@ function init() {
   }
 
   // Handle Event clicked
-  const handleCanvasClicked = (event) => {
+  const handleCanvasClicked = (event: MouseEvent): void => {
     // Get Mouse Position
     const mousePos = calculateMousePosition(event, canvas);
 
