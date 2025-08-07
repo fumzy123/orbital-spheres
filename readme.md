@@ -1,8 +1,6 @@
-# Three.js Journey
-
-## Description
-The purpose of this project was to make a threejs animation based on trigonometric functions.
-It's a simple animation. Click the cube to see it
+# Description
+The purpose of this project was to make a visually appealing 3D animation that uses the relies of trigonometric functions.
+It's a simple animation. Click the cube to see it in action.
 
 ## How to trigger the trigonometric animation
 Click the green cube to see the trigonometric animation
