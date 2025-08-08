@@ -1,5 +1,5 @@
 # Description
-The purpose of this project was to make a visually appealing 3D animation that uses the relies of trigonometric functions.
+The purpose of this project was to make a visually appealing 3D animation that uses trigonometric functions.
 It's a simple animation.
 Click the link in the about section to go to the web page
 Click the cube to see the animation in action
