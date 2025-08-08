@@ -1,6 +1,9 @@
 # Description
 The purpose of this project was to make a visually appealing 3D animation that uses the relies of trigonometric functions.
-It's a simple animation. Click the cube to see it in action.
+It's a simple animation.
+Click the link in the about section to go to the web page
+Click the cube to see the animation in action
+
 
 ## How to trigger the trigonometric animation
 Click the green cube to see the trigonometric animation
@@ -28,8 +31,8 @@ The reason these formula works is based on the understanding of the
 - Unit circle and 
 - SOH/CAH/TOH
 ```js
-const targetX = centerPosition.x + radius * Math.cos(angle);
-const targetY = centerPosition.y + radius * Math.sin(angle);
+const targetX = radius * Math.cos(angle);
+const targetY = radius * Math.sin(angle);
 const targetZ = centerPosition.z;
 ```
 
