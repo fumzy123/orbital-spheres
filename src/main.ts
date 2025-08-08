@@ -38,7 +38,7 @@ function init(): void {
   function addSpheresAroundObject(
     clickedObject: THREE.Object3D,
     sphereCount = 4,
-    radius = 1
+    radius = 1.25
   ): void {
     // Create Sphere ring at the centre of clicked object
     const { sphereGroup, spheres } = createSphereRing(

@@ -15,8 +15,8 @@ export const animateSphereExpansion = (
 ): void => {
   spheres.forEach(({ sphere, angle }, index) => {
     // Calculate Sphere target positions using angles
-    const targetX = centerPosition.x + radius * Math.cos(angle);
-    const targetY = centerPosition.y + radius * Math.sin(angle);
+    const targetX = radius * Math.cos(angle);
+    const targetY = radius * Math.sin(angle);
     const targetZ = centerPosition.z;
 
     // Animate Sphere Position to Target Position
